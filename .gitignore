@@ -1,6 +1,7 @@
 .idea/
 .DS_Store
 *.log
+*.sw?
 .build-ios
 .build-android
 .build-browser

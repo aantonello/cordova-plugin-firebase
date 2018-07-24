@@ -47,6 +47,8 @@
 - (BOOL)application:(UIApplication *)application swizzledDidFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [self application:application swizzledDidFinishLaunchingWithOptions:launchOptions];
 
+    [application registerForRemoteNotifications];
+
     if (![FIRApp defaultApp]) {
         [FIRApp configure];
     }
@@ -130,6 +132,11 @@
 // To enable direct data messages, you can set [Messaging messaging].shouldEstablishDirectChannel to YES.
 - (void)messaging:(FIRMessaging *)messaging didReceiveMessage:(FIRMessagingRemoteMessage *)remoteMessage {
     NSLog(@"Received data message: %@", remoteMessage.appData);
+
+    NSDictionary *mutableDict = [[remoteMessage appData] mutableCopy];
+
+    [mutableDict setValue:self.applicationInBackground forKey:@"tap"];
+    [FirebasePlugin.firebasePlugin sendNotification:mutableDict];
 }
 
 // [END ios_10_data_message]
@@ -150,9 +157,11 @@
     [mutableUserInfo setValue:self.applicationInBackground forKey:@"tap"];
 
     // Print full message.
+    NSLog(@"userNotificationCenter:willPresentNotification:withCompletionHandler:");
     NSLog(@"%@", mutableUserInfo);
 
     [FirebasePlugin.firebasePlugin sendNotification:mutableUserInfo];
+    completionHandler(UNNotificationPresentationOptionNone);
 }
 
 - (void) userNotificationCenter:(UNUserNotificationCenter *)center
@@ -171,6 +180,7 @@
     [mutableUserInfo setValue:@YES forKey:@"tap"];
 
     // Print full message.
+    NSLog(@"userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:");
     NSLog(@"Response %@", mutableUserInfo);
 
     [FirebasePlugin.firebasePlugin sendNotification:mutableUserInfo];
